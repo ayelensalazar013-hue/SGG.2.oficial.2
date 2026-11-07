@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGG - Gestión de Gastos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- BOTÓN FIJO EN LA ESQUINA SUPERIOR DERECHA -->
+    <button type="button" class="btn-tema" id="btn-tema" onclick="cambiarTema()">Cambiar Modo</button>
+
+    <!-- TARJETA CENTRADA PRINCIPAL -->
+    <main class="container">
+        <h1>Gestión de Gastos</h1>
+        <div class="user-welcome" id="userWelcome">Cargando usuario...</div>
+
+        <section class="dashboard-summary">
+            <h2>Total Gastado</h2>
+            <div class="total-monto" id="totalGastado">$0.00</div>
+        </section>
+
+        <form id="form-gasto">
+            <input type="hidden" id="gastoId">
+            
+            <div class="form-group">
+                <label for="monto">Monto ($):</label>
+                <input type="number" id="monto" name="monto" step="0.01" required placeholder="Ingresá el monto">
+            </div>
+
+            <div class="form-group">
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" required>
+            </div>
+
+            <div class="form-group">
+                <label for="categoria">Categoría:</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="" disabled selected>Seleccioná una categoría</option>
+                    <option value="Alimentación">Alimentación</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Servicios">Servicios</option>
+                    <option value="Ocio">Ocio</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" name="descripcion" required placeholder="Ingresá una breve descripción">
+            </div>
+
+            <button type="submit" class="btn-principal" id="btn-guardar-gasto">Guardar Gasto</button>
+            <button type="button" class="btn-cancelar" id="btn-cancelar-edicion" style="display: none;" onclick="cancelarEdicion()">Cancelar Edición</button>
+        </form>
+
+        <div id="mensaje" class="msg-box" aria-live="polite"></div>
+
+        <hr class="divisoria">
+
+        <h2>Historial de Gastos</h2>
+        <div class="tabla-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaGastosBody">
+                </tbody>
+            </table>
+        </div>
+
+        <hr class="divisoria">
+        <button type="button" class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </main>
+
+    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+    <div class="modal-overlay" id="modalConfirmar">
+        <div class="modal-card">
+            <h3>¿Eliminar registro?</h3>
+            <p style="font-size: 0.9rem;">El gasto cambiará a estado inactivo.</p>
+            <div class="modal-acciones">
+                <button type="button" class="btn-principal" style="background-color: var(--error-color);" onclick="confirmarEliminacion()">Eliminar</button>
+                <button type="button" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/gastos.js"></script>
+</body>
+</html>

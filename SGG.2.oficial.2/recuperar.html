@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGG - Recuperar Contraseña</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilos para las reglas de validación en tiempo real */
+        .reglas-password {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 20px 0;
+            font-size: 0.88rem;
+        }
+
+        .reglas-password li {
+            margin-bottom: 5px;
+            color: var(--text-color, #ffffff);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .reglas-password li.invalido {
+            color: #ff6b6b;
+        }
+
+        .reglas-password li.valido {
+            color: #81c784;
+        }
+    </style>
+</head>
+<body>
+    <button type="button" class="btn-tema" id="btn-tema" onclick="cambiarTema()">Cambiar Modo</button>
+
+    <main class="card-container">
+        <h1>Recuperar Contraseña</h1>
+
+        <form id="form-recuperar">
+            <div class="form-group">
+                <label for="email">Correo Electrónico Registrado:</label>
+                <input type="email" id="email" name="email" required placeholder="Ingresá tu email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Nueva Contraseña:</label>
+                <!-- Campo tipo text: las letras se ven directamente -->
+                <input type="text" id="password" name="password" required placeholder="Ingresá tu nueva clave">
+            </div>
+
+            <!-- Lista interactiva de requisitos de seguridad -->
+            <ul class="reglas-password" id="lista-reglas">
+                <li id="rule-length" class="invalido">✖ Mínimo 8 caracteres</li>
+                <li id="rule-upper" class="invalido">✖ Al menos una mayúscula</li>
+                <li id="rule-lower" class="invalido">✖ Al menos una minúscula</li>
+                <li id="rule-number" class="invalido">✖ Al menos un número</li>
+                <li id="rule-special" class="invalido">✖ Al menos un símbolo (!@#$%^&*)</li>
+            </ul>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirmar Nueva Contraseña:</label>
+                <!-- Campo tipo text: sin ocultar caracteres -->
+                <input type="text" id="confirmPassword" name="confirmPassword" required placeholder="Repetí la contraseña">
+            </div>
+
+            <!-- Botón de actualización directa (sin botón de Mostrar) -->
+            <button type="submit" class="btn-principal" id="btn-actualizar">Actualizar Contraseña</button>
+        </form>
+
+        <div id="recMensaje" class="msg-box" aria-live="polite"></div>
+
+        <hr class="divisoria">
+
+        <div class="card-footer">
+            <a href="index.html">Volver al Login</a>
+        </div>
+    </main>
+
+    <script>
+        // Persistencia y cambio de modo Claro/Oscuro
+        (function() {
+            const temaGuardado = localStorage.getItem('tema_sgg');
+            if (!temaGuardado) {
+                localStorage.setItem('tema_sgg', 'claro');
+                document.body.classList.remove('modo-noche');
+            } else if (temaGuardado === 'oscuro') {
+                document.body.classList.add('modo-noche');
+            } else {
+                document.body.classList.remove('modo-noche');
+            }
+        })();
+
+        window.cambiarTema = function() {
+            document.body.classList.toggle('modo-noche');
+            const esOscuro = document.body.classList.contains('modo-noche');
+            localStorage.setItem('tema_sgg', esOscuro ? 'oscuro' : 'claro');
+        };
+
+        // Lógica de validación de reglas en tiempo real y envío del formulario
+        document.addEventListener('DOMContentLoaded', () => {
+            const passInput = document.getElementById('password');
+            const formRecuperar = document.getElementById('form-recuperar');
+            const recMensaje = document.getElementById('recMensaje');
+
+            const ruleLength = document.getElementById('rule-length');
+            const ruleUpper = document.getElementById('rule-upper');
+            const ruleLower = document.getElementById('rule-lower');
+            const ruleNumber = document.getElementById('rule-number');
+            const ruleSpecial = document.getElementById('rule-special');
+
+            if (passInput) {
+                passInput.addEventListener('input', () => {
+                    const val = passInput.value;
+
+                    if (val.length >= 8) {
+                        ruleLength.className = 'valido';
+                        ruleLength.textContent = '✔ Mínimo 8 caracteres';
+                    } else {
+                        ruleLength.className = 'invalido';
+                        ruleLength.textContent = '✖ Mínimo 8 caracteres';
+                    }
+
+                    if (/[A-Z]/.test(val)) {
+                        ruleUpper.className = 'valido';
+                        ruleUpper.textContent = '✔ Al menos una mayúscula';
+                    } else {
+                        ruleUpper.className = 'invalido';
+                        ruleUpper.textContent = '✖ Al menos una mayúscula';
+                    }
+
+                    if (/[a-z]/.test(val)) {
+                        ruleLower.className = 'valido';
+                        ruleLower.textContent = '✔ Al menos una minúscula';
+                    } else {
+                        ruleLower.className = 'invalido';
+                        ruleLower.textContent = '✖ Al menos una minúscula';
+                    }
+
+                    if (/[0-9]/.test(val)) {
+                        ruleNumber.className = 'valido';
+                        ruleNumber.textContent = '✔ Al menos un número';
+                    } else {
+                        ruleNumber.className = 'invalido';
+                        ruleNumber.textContent = '✖ Al menos un número';
+                    }
+
+                    if (/[!@#$%^&*(),.?":{}|<>]/.test(val)) {
+                        ruleSpecial.className = 'valido';
+                        ruleSpecial.textContent = '✔ Al menos un símbolo (!@#$%^&*)';
+                    } else {
+                        ruleSpecial.className = 'invalido';
+                        ruleSpecial.textContent = '✖ Al menos un símbolo (!@#$%^&*)';
+                    }
+                });
+            }
+
+            if (formRecuperar) {
+                formRecuperar.addEventListener('submit', (e) => {
+                    e.preventDefault();
+
+                    const email = document.getElementById('email').value.trim();
+                    const password = document.getElementById('password').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+
+                    if (password !== confirmPassword) {
+                        recMensaje.className = 'msg-box error';
+                        recMensaje.textContent = 'Las contraseñas no coinciden.';
+                        return;
+                    }
+
+                    const esValida = password.length >= 8 &&
+                                     /[A-Z]/.test(password) &&
+                                     /[a-z]/.test(password) &&
+                                     /[0-9]/.test(password) &&
+                                     /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+                    if (!esValida) {
+                        recMensaje.className = 'msg-box error';
+                        recMensaje.textContent = 'La contraseña no cumple con todos los requisitos de seguridad.';
+                        return;
+                    }
+
+                    let usuarios = JSON.parse(localStorage.getItem('usuarios_sgg')) || [];
+                    const idx = usuarios.findIndex(u => u.email === email || u.usuario === email);
+
+                    if (idx !== -1) {
+                        usuarios[idx].password = password;
+                        localStorage.setItem('usuarios_sgg', JSON.stringify(usuarios));
+
+                        recMensaje.className = 'msg-box success';
+                        recMensaje.textContent = 'Contraseña actualizada con éxito. Redirigiendo al login...';
+
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    } else {
+                        recMensaje.className = 'msg-box error';
+                        recMensaje.textContent = 'No se encontró ninguna cuenta asociada a este correo o usuario.';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
