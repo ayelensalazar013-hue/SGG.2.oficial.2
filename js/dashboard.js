@@ -1,114 +1,103 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Gastos - Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+// Clave de API pública para la subida de comprobantes a ImgBB
+const IMGBB_API_KEY = "3b08e5c3c0df93608226065476a6d6d8"; 
 
-    <!-- Encabezado y Navegación Principal -->
-    <header>
-        <h1>Sistema de Gestión de Gastos</h1>
-        <nav>
-            <button id="btnCambiarTema">Modo Día / Noche</button>
-            <button id="btnCerrarSesion">Cerrar Sesión</button>
-        </nav>
-    </header>
+/**
+ * Petición asincrónica (fetch / async-await) a API REST usando FormData.
+ * Cumple resiliencia y manejo de excepciones (try/catch).
+ */
+async function subirComprobanteAPI(fileInput) {
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        return null;
+    }
 
-    <!-- Contenido Principal -->
-    <main>
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append("image", file);
 
-        <!-- Panel Superior: Resumen de Balance -->
-        <section id="resumen-balance">
-            <h2>Resumen General</h2>
-            <div>
-                <p>Total Gastado: <span id="totalGastado">$0</span></p>
-            </div>
-        </section>
+    try {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: "POST",
+            body: formData
+        });
 
-        <!-- Formulario para Registrar Gastos o Ingresos -->
-        <section id="formulario-gasto">
-            <h2>Cargar Movimiento</h2>
-            <form id="formGasto">
-                <div>
-                    <label for="tipoMovimiento">Tipo de Movimiento:</label>
-                    <select id="tipoMovimiento" required>
-                        <option value="egreso">Egreso (Gasto)</option>
-                        <option value="ingreso">Ingreso</option>
-                    </select>
-                </div>
+        const data = await response.json();
 
-                <div>
-                    <label for="monto">Monto:</label>
-                    <input type="number" id="monto" step="0.01" min="0.01" placeholder="Ej: 1500.50" required>
-                </div>
+        if (response.ok && data.success) {
+            return data.data.url; // Retorna únicamente la URL pública
+        } else {
+            throw new Error(data.error?.message || "Error devuelto por la API REST");
+        }
+    } catch (error) {
+        console.warn("Falla de red o API al subir comprobante. Se guardará como NULL:", error);
+        alert("Atención: No se pudo subir el comprobante. El gasto se registrará sin la imagen.");
+        return null;
+    }
+}
 
-                <div>
-                    <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" required>
-                </div>
+document.addEventListener("DOMContentLoaded", async () => {
+    await inicializarBaseDeDatos();
+    renderizarPantalla();
 
-                <div>
-                    <label for="categoria">Categoría:</label>
-                    <select id="categoria" required>
-                        <option value="">Seleccione una categoría</option>
-                        <option value="Comida">Comida</option>
-                        <option value="Transporte">Transporte</option>
-                        <option value="Servicios">Servicios</option>
-                        <option value="Entretenimiento">Entretenimiento</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
+    const formGasto = document.getElementById("formGasto");
+    if (formGasto) {
+        formGasto.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-                <div>
-                    <label for="descripcion">Descripción:</label>
-                    <input type="text" id="descripcion" placeholder="Breve detalle del movimiento">
-                </div>
+            const tipo = document.getElementById("tipoMovimiento").value;
+            const monto = parseFloat(document.getElementById("monto").value);
+            const fecha = document.getElementById("fecha").value;
+            const categoria = document.getElementById("categoria").value;
+            const descripcion = document.getElementById("descripcion").value;
+            const fileInput = document.getElementById("comprobante");
 
-                <!-- Campo Opcional para Comprobante (Punto 4 API REST) -->
-                <div>
-                    <label for="comprobante">Comprobante (Opcional):</label>
-                    <input type="file" id="comprobante" accept="image/*">
-                </div>
+            // 1. Sube la imagen a la API REST (o retorna null si falla/no hay)
+            const urlComprobante = await subirComprobanteAPI(fileInput);
 
-                <button type="submit">Guardar Movimiento</button>
-            </form>
-        </section>
+            // 2. Guarda el registro vía SQL puro en la base SQLite/OPFS
+            await guardarMovimientoSQL("usuario@ejemplo.com", tipo, monto, fecha, categoria, descripcion, urlComprobante);
+            
+            formGasto.reset();
+            renderizarPantalla();
+        });
+    }
+});
 
-        <!-- Tabla con el Historial de Movimientos -->
-        <section id="historial-gastos">
-            <h2>Historial de Movimientos</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Tipo</th>
-                        <th>Monto</th>
-                        <th>Fecha</th>
-                        <th>Categoría</th>
-                        <th>Descripción</th>
-                        <th>Comprobante</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaGastosBody">
-                    <!-- Los registros guardados se cargarán aquí dinámicamente -->
-                </tbody>
-            </table>
-        </section>
+function renderizarPantalla() {
+    const tablaBody = document.getElementById("tablaGastosBody");
+    const totalGastadoSpan = document.getElementById("totalGastado");
+    if (!tablaBody) return;
 
-    </main>
+    const movimientos = obtenerMovimientosSQL("usuario@ejemplo.com");
+    tablaBody.innerHTML = "";
 
-    <!-- LIBRERÍAS Y SCRIPTS EN ORDEN ESTRICTO DE ARQUITECTURA -->
-    <!-- 1. Motor oficial de SQLite impulsado por WebAssembly -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    
-    <!-- 2. Capa de Persistencia Relacional y OPFS -->
-    <script src="js/db.js"></script>
+    movimientos.forEach(mov => {
+        const tr = document.createElement("tr");
+        
+        const linkComprobante = mov.url_comprobante 
+            ? `<a href="${mov.url_comprobante}" target="_blank">Ver Comprobante</a>` 
+            : "-";
 
-    <!-- 3. Capa de Lógica de Interfaz de Usuario y API REST -->
-    <script src="js/dashboard.js"></script>
+        tr.innerHTML = `
+            <td>${mov.tipo_movimiento}</td>
+            <td>$${mov.monto.toFixed(2)}</td>
+            <td>${mov.fecha}</td>
+            <td>${mov.categoria}</td>
+            <td>${mov.descripcion || "-"}</td>
+            <td>${linkComprobante}</td>
+            <td><button onclick="ejecutarBajaLogica(${mov.id})">Eliminar</button></td>
+        `;
+        tablaBody.appendChild(tr);
+    });
 
-</body>
-</html>
+    const balance = calcularBalanceSQL("usuario@ejemplo.com");
+    if (totalGastadoSpan) {
+        totalGastadoSpan.textContent = `$${balance.balanceGeneral.toFixed(2)}`;
+    }
+}
+
+async function ejecutarBajaLogica(id) {
+    if (confirm("¿Confirmar eliminación del registro?")) {
+        await eliminarMovimientoLogicoSQL(id);
+        renderizarPantalla();
+    }
+}
