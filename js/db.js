@@ -21,7 +21,7 @@ async function inicializarBaseDeDatos() {
     }
 }
 
-// Estructura de tabla SQL estándar (Puntos 2 y 3)
+// Estructura de tabla SQL estándar
 function crearTablasIniciales() {
     if (!db) return;
     const sql = `
@@ -40,7 +40,7 @@ function crearTablasIniciales() {
     db.run(sql);
 }
 
-// Escritura asincrónica del binario .sqlite en disco nativo OPFS (Punto 2)
+// Escritura asincrónica del binario .sqlite en disco nativo OPFS
 async function guardarEnOPFS() {
     if (!db) return;
     const data = db.export();
@@ -51,7 +51,7 @@ async function guardarEnOPFS() {
     await writable.close();
 }
 
-// Operación INSERT INTO vía SQL (Guardando URL del comprobante o NULL)
+// Operación INSERT INTO vía SQL
 async function guardarMovimientoSQL(correo, tipo, monto, fecha, categoria, descripcion, urlComprobante = null) {
     if (!db) await inicializarBaseDeDatos();
     const sql = `
@@ -62,7 +62,7 @@ async function guardarMovimientoSQL(correo, tipo, monto, fecha, categoria, descr
     await guardarEnOPFS();
 }
 
-// Operación SELECT vía SQL (Solo activos, para auditoría)
+// Operación SELECT vía SQL (Solo registros activos)
 function obtenerMovimientosSQL(correo) {
     if (!db) return [];
     const sql = `
@@ -82,7 +82,7 @@ function obtenerMovimientosSQL(correo) {
     });
 }
 
-// Operación UPDATE (Borrado Lógico) vía SQL - PROHIBIDO DELETE FISICO
+// Operación UPDATE (Borrado Lógico) vía SQL
 async function eliminarMovimientoLogicoSQL(idMovimiento) {
     if (!db) return;
     const sql = `UPDATE movimientos SET activo = 0 WHERE id = ?`;
@@ -90,7 +90,7 @@ async function eliminarMovimientoLogicoSQL(idMovimiento) {
     await guardarEnOPFS();
 }
 
-// Agregación SUM / GROUP BY vía SQL para balance dinámico (Punto 3)
+// Agregación SQL: Ingresos vs Egresos (Puntos 3 y 5)
 function calcularBalanceSQL(correo) {
     if (!db) return { totalIngresos: 0, totalEgresos: 0, balanceGeneral: 0 };
     const sql = `
@@ -108,4 +108,26 @@ function calcularBalanceSQL(correo) {
         });
     }
     return { totalIngresos: ingresos, totalEgresos: egresos, balanceGeneral: ingresos - egresos };
+}
+
+// Agregación SQL: Distribución de egresos acumulados por categoría (Punto 5)
+function obtenerEgresosPorCategoriaSQL(correo) {
+    if (!db) return { categorias: [], montos: [] };
+    const sql = `
+        SELECT categoria, SUM(monto) as total
+        FROM movimientos
+        WHERE correo_usuario = ? AND tipo_movimiento = 'egreso' AND activo = 1
+        GROUP BY categoria
+    `;
+    const res = db.exec(sql, [correo]);
+    if (res.length === 0) return { categorias: [], montos: [] };
+
+    const categorias = [];
+    const montos = [];
+    res[0].values.forEach(fila => {
+        categorias.push(fila[0]);
+        montos.push(fila[1]);
+    });
+
+    return { categorias, montos };
 }
