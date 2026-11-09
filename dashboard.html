@@ -93,12 +93,15 @@
 
     </main>
 
-    <!-- LIBRERÍAS Y SCRIPTS (AQUÍ ESTÁN CONECTADOS SQLITE Y TU BASE DE DATOS) -->
-    <!-- 1. Librería oficial de SQLite para WebAssembly -->
+    <!-- LIBRERÍAS Y SCRIPTS EN ORDEN ESTRICTO DE ARQUITECTURA -->
+    <!-- 1. Motor oficial de SQLite impulsado por WebAssembly -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     
-    <!-- 2. Tu archivo de base de datos SQLite con OPFS -->
+    <!-- 2. Capa de Persistencia Relacional y OPFS -->
     <script src="js/db.js"></script>
+
+    <!-- 3. Capa de Lógica de Interfaz de Usuario -->
+    <script src="js/dashboard.js"></script>
 
 </body>
 </html>
