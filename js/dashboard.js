@@ -1,12 +1,8 @@
 const IMGBB_API_KEY = "3b08e5c3c0df93608226065476a6d6d8"; 
 
-// Variables globales para las instancias de Chart.js
 let chartCategoriasInstance = null;
 let chartBalanceInstance = null;
 
-/**
- * Petición asincrónica a la API REST de ImgBB con FormData
- */
 async function subirComprobanteAPI(fileInput) {
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         return null;
@@ -37,8 +33,27 @@ async function subirComprobanteAPI(fileInput) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    await inicializarBaseDeDatos();
+    // Inicializa la DB usando el flujo Offline-First (descarga desde BaaS a OPFS si existe)
+    await inicializarBaseDeDatos("usuario@ejemplo.com");
     renderizarPantalla();
+
+    // Evento del botón para sincronización manual con la nube (BaaS)
+    const btnSincronizar = document.getElementById("btnSincronizarNube");
+    if (btnSincronizar) {
+        btnSincronizar.addEventListener("click", async () => {
+            const estadoSpan = document.getElementById("estadoSincronizacion");
+            if (estadoSpan) estadoSpan.textContent = "Estado: Sincronizando con la Nube...";
+            
+            const exito = await subirBaseDeDatosABaaS("usuario@ejemplo.com");
+            if (exito) {
+                alert("¡Base de datos .sqlite respaldada con éxito en la Nube (BaaS)!");
+                if (estadoSpan) estadoSpan.textContent = "Estado: Sincronizado en la Nube";
+            } else {
+                alert("No se pudo conectar con el servicio BaaS. Tu información sigue segura localmente en OPFS.");
+                if (estadoSpan) estadoSpan.textContent = "Estado: Modo Local (Offline)";
+            }
+        });
+    }
 
     const formGasto = document.getElementById("formGasto");
     if (formGasto) {
@@ -94,20 +109,15 @@ function renderizarPantalla() {
         totalGastadoSpan.textContent = `$${balance.balanceGeneral.toFixed(2)}`;
     }
 
-    // Actualiza el módulo de reportes (Chart.js)
     renderizarGraficos("usuario@ejemplo.com");
 }
 
-/**
- * Renderiza los dos gráficos interactivos exigidos por el Punto 5
- */
 function renderizarGraficos(correo) {
     const ctxCat = document.getElementById("chartCategorias");
     const ctxBal = document.getElementById("chartBalance");
 
     if (!ctxCat || !ctxBal) return;
 
-    // 1. Gráfico de Pie/Dona: Egresos por Categoría (Alimentado por SQL GROUP BY)
     const datosCat = obtenerEgresosPorCategoriaSQL(correo);
     if (chartCategoriasInstance) {
         chartCategoriasInstance.destroy();
@@ -129,7 +139,6 @@ function renderizarGraficos(correo) {
         }
     });
 
-    // 2. Gráfico de Barras: Ingresos vs Egresos (Alimentado por SQL GROUP BY)
     const balance = calcularBalanceSQL(correo);
     if (chartBalanceInstance) {
         chartBalanceInstance.destroy();
@@ -155,7 +164,7 @@ function renderizarGraficos(correo) {
 
 async function ejecutarBajaLogica(id) {
     if (confirm("¿Confirmar eliminación del registro?")) {
-        await eliminarMovimientoLogicoSQL(id);
+        await eliminarMovimientoLogicoSQL(id, "usuario@ejemplo.com");
         renderizarPantalla();
     }
 }
