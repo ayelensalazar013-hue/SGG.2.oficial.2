@@ -21,7 +21,7 @@ async function inicializarBaseDeDatos() {
     }
 }
 
-// Estructura de tabla SQL estándar
+// Estructura de tabla SQL estándar (Puntos 2 y 3)
 function crearTablasIniciales() {
     if (!db) return;
     const sql = `
@@ -40,7 +40,7 @@ function crearTablasIniciales() {
     db.run(sql);
 }
 
-// Escritura asincrónica del binario .sqlite en disco nativo OPFS
+// Escritura asincrónica del binario .sqlite en disco nativo OPFS (Punto 2)
 async function guardarEnOPFS() {
     if (!db) return;
     const data = db.export();
@@ -51,7 +51,7 @@ async function guardarEnOPFS() {
     await writable.close();
 }
 
-// Operación INSERT INTO vía SQL
+// Operación INSERT INTO vía SQL (Guardando URL del comprobante o NULL)
 async function guardarMovimientoSQL(correo, tipo, monto, fecha, categoria, descripcion, urlComprobante = null) {
     if (!db) await inicializarBaseDeDatos();
     const sql = `
@@ -62,7 +62,7 @@ async function guardarMovimientoSQL(correo, tipo, monto, fecha, categoria, descr
     await guardarEnOPFS();
 }
 
-// Operación SELECT vía SQL
+// Operación SELECT vía SQL (Solo activos, para auditoría)
 function obtenerMovimientosSQL(correo) {
     if (!db) return [];
     const sql = `
@@ -82,7 +82,7 @@ function obtenerMovimientosSQL(correo) {
     });
 }
 
-// Operación UPDATE (Borrado Lógico) vía SQL
+// Operación UPDATE (Borrado Lógico) vía SQL - PROHIBIDO DELETE FISICO
 async function eliminarMovimientoLogicoSQL(idMovimiento) {
     if (!db) return;
     const sql = `UPDATE movimientos SET activo = 0 WHERE id = ?`;
@@ -90,7 +90,7 @@ async function eliminarMovimientoLogicoSQL(idMovimiento) {
     await guardarEnOPFS();
 }
 
-// Agregación SUM / GROUP BY vía SQL
+// Agregación SUM / GROUP BY vía SQL para balance dinámico (Punto 3)
 function calcularBalanceSQL(correo) {
     if (!db) return { totalIngresos: 0, totalEgresos: 0, balanceGeneral: 0 };
     const sql = `
