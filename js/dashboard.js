@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (formGasto) {
         formGasto.addEventListener("submit", async (e) => {
             e.preventDefault();
-            
+
             const tipo = document.getElementById("tipoMovimiento").value;
             const monto = parseFloat(document.getElementById("monto").value);
             const fecha = document.getElementById("fecha").value;
@@ -48,7 +48,7 @@ function renderizarPantalla() {
 }
 
 async function ejecutarBajaLogica(id) {
-    if (confirm("¿Confirmar eliminación lógica del registro?")) {
+    if (confirm("¿Confirmar eliminación del registro?")) {
         await eliminarMovimientoLogicoSQL(id);
         renderizarPantalla();
     }
