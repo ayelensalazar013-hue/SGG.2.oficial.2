@@ -12,6 +12,7 @@
     <header>
         <h1>Sistema de Gestión de Gastos</h1>
         <nav>
+            <button id="btnSincronizarNube">Sincronizar con la Nube</button>
             <button id="btnCambiarTema">Modo Día / Noche</button>
             <button id="btnCerrarSesion">Cerrar Sesión</button>
         </nav>
@@ -25,10 +26,11 @@
             <h2>Resumen General</h2>
             <div>
                 <p>Total Gastado: <span id="totalGastado">$0</span></p>
+                <p id="estadoSincronizacion" style="font-size: 0.9em; color: gray;">Estado: Modo Local (Offline-First)</p>
             </div>
         </section>
 
-        <!-- Módulo de Reportes e Inteligencia de Datos (Punto 5: Chart.js) -->
+        <!-- Módulo de Reportes e Inteligencia de Datos (Chart.js) -->
         <section id="reportes-graficos">
             <h2>Panel de Control e Inteligencia de Datos</h2>
             <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
@@ -119,13 +121,16 @@
     <!-- 1. Motor oficial de SQLite impulsado por WebAssembly -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     
-    <!-- 2. Librería Chart.js para visualización de datos interactiva -->
+    <!-- 2. Librería Chart.js para visualización de datos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- 3. Capa de Persistencia Relacional y OPFS -->
+    <!-- 3. SDK oficial de Supabase (BaaS) para Sincronización en la Nube -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 4. Capa de Persistencia Relacional y OPFS -->
     <script src="js/db.js"></script>
 
-    <!-- 4. Capa de Lógica de Interfaz de Usuario, API REST y Gráficos -->
+    <!-- 5. Capa de Lógica de Interfaz de Usuario, API REST, Gráficos y BaaS -->
     <script src="js/dashboard.js"></script>
 
 </body>
