@@ -1,7 +1,7 @@
 let db = null;
 const NOMBRE_DB = "gastos.sqlite";
 
-// Inicialización de SQLite (WebAssembly) y recuperación desde OPFS
+// Inicializa el motor WebAssembly y recupera el archivo binario desde OPFS
 async function inicializarBaseDeDatos() {
     const SQL = await initSqlJs({
         locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
@@ -21,7 +21,7 @@ async function inicializarBaseDeDatos() {
     }
 }
 
-// Estructura de tabla con consultas SQL estándar (CREATE TABLE)
+// Estructura de tabla SQL estándar
 function crearTablasIniciales() {
     if (!db) return;
     const sql = `
@@ -40,7 +40,7 @@ function crearTablasIniciales() {
     db.run(sql);
 }
 
-// Escritas nativas en OPFS mediante navigator.storage.getDirectory()
+// Escritura asincrónica del binario .sqlite en disco nativo OPFS
 async function guardarEnOPFS() {
     if (!db) return;
     const data = db.export();
@@ -51,7 +51,7 @@ async function guardarEnOPFS() {
     await writable.close();
 }
 
-// Inserción vía SQL (INSERT INTO)
+// Operación INSERT INTO vía SQL
 async function guardarMovimientoSQL(correo, tipo, monto, fecha, categoria, descripcion, urlComprobante = null) {
     if (!db) await inicializarBaseDeDatos();
     const sql = `
@@ -62,7 +62,7 @@ async function guardarMovimientoSQL(correo, tipo, monto, fecha, categoria, descr
     await guardarEnOPFS();
 }
 
-// Lectura vía SQL (SELECT)
+// Operación SELECT vía SQL
 function obtenerMovimientosSQL(correo) {
     if (!db) return [];
     const sql = `
@@ -73,7 +73,7 @@ function obtenerMovimientosSQL(correo) {
     `;
     const res = db.exec(sql, [correo]);
     if (res.length === 0) return [];
-    
+
     const columnas = res[0].columns;
     return res[0].values.map(fila => {
         let obj = {};
@@ -82,7 +82,7 @@ function obtenerMovimientosSQL(correo) {
     });
 }
 
-// Actualización / Borrado Lógico vía SQL (UPDATE)
+// Operación UPDATE (Borrado Lógico) vía SQL
 async function eliminarMovimientoLogicoSQL(idMovimiento) {
     if (!db) return;
     const sql = `UPDATE movimientos SET activo = 0 WHERE id = ?`;
@@ -90,7 +90,7 @@ async function eliminarMovimientoLogicoSQL(idMovimiento) {
     await guardarEnOPFS();
 }
 
-// Consulta de agregación SQL (SUM / GROUP BY)
+// Agregación SUM / GROUP BY vía SQL
 function calcularBalanceSQL(correo) {
     if (!db) return { totalIngresos: 0, totalEgresos: 0, balanceGeneral: 0 };
     const sql = `
