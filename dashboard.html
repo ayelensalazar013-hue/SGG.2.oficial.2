@@ -67,6 +67,12 @@
                     <input type="text" id="descripcion" placeholder="Breve detalle del movimiento">
                 </div>
 
+                <!-- Campo Opcional para Comprobante (Punto 4 API REST) -->
+                <div>
+                    <label for="comprobante">Comprobante (Opcional):</label>
+                    <input type="file" id="comprobante" accept="image/*">
+                </div>
+
                 <button type="submit">Guardar Movimiento</button>
             </form>
         </section>
@@ -82,6 +88,7 @@
                         <th>Fecha</th>
                         <th>Categoría</th>
                         <th>Descripción</th>
+                        <th>Comprobante</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -100,7 +107,7 @@
     <!-- 2. Capa de Persistencia Relacional y OPFS -->
     <script src="js/db.js"></script>
 
-    <!-- 3. Capa de Lógica de Interfaz de Usuario -->
+    <!-- 3. Capa de Lógica de Interfaz de Usuario y API REST -->
     <script src="js/dashboard.js"></script>
 
 </body>
