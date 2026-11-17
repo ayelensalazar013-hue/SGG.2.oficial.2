@@ -4,52 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión de Gastos - Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            align-items: flex-start !important;
+            padding-top: 75px !important;
+        }
+        main.dashboard-main {
+            max-width: 950px !important;
+            width: 100%;
+        }
+        header.dashboard-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        header.dashboard-header nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        header.dashboard-header nav button {
+            width: auto !important;
+            padding: 10px 18px !important;
+        }
+        section {
+            margin-bottom: 28px;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Encabezado y Navegación Principal -->
-    <header>
-        <h1>Sistema de Gestión de Gastos</h1>
-        <nav>
-            <button id="btnSincronizarNube">Sincronizar con la Nube</button>
-            <button id="btnCambiarTema">Modo Día / Noche</button>
-            <button id="btnCerrarSesion">Cerrar Sesión</button>
-        </nav>
-    </header>
+    <button type="button" class="btn-tema" id="btnCambiarTema">Modo Día / Noche</button>
 
     <!-- Contenido Principal -->
-    <main>
+    <main class="dashboard-main">
+
+        <!-- Encabezado y Navegación Principal -->
+        <header class="dashboard-header">
+            <h1>Sistema de Gestión de Gastos</h1>
+            <nav>
+                <button type="button" class="btn-principal" id="btnSincronizarNube">Sincronizar con la Nube</button>
+                <button type="button" class="btn-cancelar" id="btnCerrarSesion">Cerrar Sesión</button>
+            </nav>
+        </header>
 
         <!-- Panel Superior: Resumen de Balance -->
-        <section id="resumen-balance">
+        <section id="resumen-balance" class="dashboard-summary">
             <h2>Resumen General</h2>
             <div>
-                <p>Total Gastado: <span id="totalGastado">$0</span></p>
-                <p id="estadoSincronizacion" style="font-size: 0.9em; color: gray;">Estado: Modo Local (Offline-First)</p>
+                <p class="total-monto">Total Gastado: <span id="totalGastado">$0</span></p>
+                <p id="estadoSincronizacion" style="font-size: 0.9em; margin-top: 8px;">Estado: Modo Local (Offline-First)</p>
             </div>
         </section>
 
         <!-- Módulo de Reportes e Inteligencia de Datos (Chart.js) -->
         <section id="reportes-graficos">
             <h2>Panel de Control e Inteligencia de Datos</h2>
-            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
-                <div style="flex: 1; min-width: 300px; max-width: 450px;">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
+                <div style="flex: 1; min-width: 280px; max-width: 420px; text-align: center;">
                     <h3>Egresos por Categoría</h3>
                     <canvas id="chartCategorias"></canvas>
                 </div>
-                <div style="flex: 1; min-width: 300px; max-width: 450px;">
+                <div style="flex: 1; min-width: 280px; max-width: 420px; text-align: center;">
                     <h3>Ingresos vs. Egresos</h3>
                     <canvas id="chartBalance"></canvas>
                 </div>
             </div>
         </section>
 
+        <hr class="divisoria">
+
         <!-- Formulario para Registrar Gastos o Ingresos -->
         <section id="formulario-gasto">
             <h2>Cargar Movimiento</h2>
             <form id="formGasto">
-                <div>
+                <div class="form-group">
                     <label for="tipoMovimiento">Tipo de Movimiento:</label>
                     <select id="tipoMovimiento" required>
                         <option value="egreso">Egreso (Gasto)</option>
@@ -57,17 +93,17 @@
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label for="monto">Monto:</label>
                     <input type="number" id="monto" step="0.01" min="0.01" placeholder="Ej: 1500.50" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label for="fecha">Fecha:</label>
                     <input type="date" id="fecha" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label for="categoria">Categoría:</label>
                     <select id="categoria" required>
                         <option value="">Seleccione una categoría</option>
@@ -79,40 +115,44 @@
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label for="descripcion">Descripción:</label>
                     <input type="text" id="descripcion" placeholder="Breve detalle del movimiento">
                 </div>
 
                 <!-- Campo Opcional para Comprobante -->
-                <div>
+                <div class="form-group">
                     <label for="comprobante">Comprobante (Opcional):</label>
                     <input type="file" id="comprobante" accept="image/*">
                 </div>
 
-                <button type="submit">Guardar Movimiento</button>
+                <button type="submit" class="btn-principal" id="btn-guardar-gasto">Guardar Movimiento</button>
             </form>
         </section>
+
+        <hr class="divisoria">
 
         <!-- Tabla con el Historial de Movimientos -->
         <section id="historial-gastos">
             <h2>Historial de Movimientos</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Tipo</th>
-                        <th>Monto</th>
-                        <th>Fecha</th>
-                        <th>Categoría</th>
-                        <th>Descripción</th>
-                        <th>Comprobante</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaGastosBody">
-                    <!-- Los registros guardados se cargarán aquí dinámicamente -->
-                </tbody>
-            </table>
+            <div class="tabla-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Categoría</th>
+                            <th>Descripción</th>
+                            <th>Comprobante</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaGastosBody">
+                        <!-- Los registros guardados se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
         </section>
 
     </main>
