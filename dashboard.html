@@ -38,22 +38,26 @@
         .form-group {
             margin-bottom: 14px;
         }
-        .grafico-centrado {
+        .graficos-columna {
             display: flex;
             flex-direction: column;
+            gap: 28px;
             align-items: center;
-            justify-content: center;
             width: 100%;
         }
-        .grafico-centrado h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
+        .grafico-dona-caja {
+            width: 100%;
+            max-width: 280px;
             text-align: center;
         }
-        .grafico-caja {
+        .grafico-barras-caja {
             width: 100%;
-            max-width: 270px;
-            margin: 0 auto;
+            max-width: 420px;
+            text-align: center;
+        }
+        .grafico-dona-caja h3,
+        .grafico-barras-caja h3 {
+            margin: 0 0 12px 0;
         }
         /* Estilo violeta para el botón de subir comprobante */
         input[type="file"] {
@@ -109,13 +113,17 @@
             </div>
         </section>
 
-        <!-- Módulo de Reportes e Inteligencia de Datos (Chart.js) -->
+        <!-- Módulo de Reportes e Inteligencia de Datos (Chart.js - Punto 5) -->
         <section id="reportes-graficos">
             <h2>Panel de Control e Inteligencia de Datos</h2>
-            <div class="grafico-centrado">
-                <h3>Egresos por Categoría</h3>
-                <div class="grafico-caja">
+            <div class="graficos-columna">
+                <div class="grafico-dona-caja">
+                    <h3>Egresos por Categoría</h3>
                     <canvas id="chartCategorias"></canvas>
+                </div>
+                <div class="grafico-barras-caja">
+                    <h3>Ingresos y Egresos</h3>
+                    <canvas id="chartBalance"></canvas>
                 </div>
             </div>
         </section>
