@@ -1,6 +1,7 @@
 const IMGBB_API_KEY = "3b08e5c3c0df93608226065476a6d6d8";
 
 let chartCategoriasInstance = null;
+let chartBalanceInstance = null;
 let idMovimientoEditando = null;
 let idMovimientoAEliminar = null;
 
@@ -298,26 +299,60 @@ window.abrirModalEliminar = function(id) {
 
 function renderizarGraficos(correo) {
     const ctxCat = document.getElementById("chartCategorias");
-    if (!ctxCat) return;
+    const ctxBal = document.getElementById("chartBalance");
 
-    const datosCat = obtenerEgresosPorCategoriaSQL(correo);
-    if (chartCategoriasInstance) {
-        chartCategoriasInstance.destroy();
-    }
-    chartCategoriasInstance = new Chart(ctxCat, {
-        type: 'doughnut',
-        data: {
-            labels: datosCat.categorias.length > 0 ? datosCat.categorias : ["Sin datos"],
-            datasets: [{
-                data: datosCat.montos.length > 0 ? datosCat.montos : [0],
-                backgroundColor: ['#743e73', '#b886b7', '#FF6384', '#36A2EB', '#FFCE56']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
+    if (ctxCat) {
+        const datosCat = obtenerEgresosPorCategoriaSQL(correo);
+        const hayDatos = datosCat.categorias.length > 0;
+
+        if (chartCategoriasInstance) {
+            chartCategoriasInstance.destroy();
         }
-    });
+        chartCategoriasInstance = new Chart(ctxCat, {
+            type: 'doughnut',
+            data: {
+                labels: hayDatos ? datosCat.categorias : ["Sin egresos registrados"],
+                datasets: [{
+                    data: hayDatos ? datosCat.montos : [1],
+                    backgroundColor: hayDatos
+                        ? ['#743e73', '#b886b7', '#FF6384', '#36A2EB', '#FFCE56']
+                        : ['#e0cde0']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { enabled: hayDatos }
+                }
+            }
+        });
+    }
+
+    if (ctxBal) {
+        const balance = calcularBalanceSQL(correo);
+        if (chartBalanceInstance) {
+            chartBalanceInstance.destroy();
+        }
+        chartBalanceInstance = new Chart(ctxBal, {
+            type: 'bar',
+            data: {
+                labels: ['Ingresos', 'Egresos'],
+                datasets: [{
+                    label: 'Monto ($)',
+                    data: [balance.totalIngresos, balance.totalEgresos],
+                    backgroundColor: ['#125416', '#743e73']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
 }
