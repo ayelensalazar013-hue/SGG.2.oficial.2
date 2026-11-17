@@ -185,6 +185,12 @@
                     const idx = usuarios.findIndex(u => u.email === email || u.usuario === email);
 
                     if (idx !== -1) {
+                        if (usuarios[idx].password === password) {
+                            recMensaje.className = 'msg-box error';
+                            recMensaje.textContent = 'La nueva contraseña no puede ser igual a la anterior.';
+                            return;
+                        }
+
                         usuarios[idx].password = password;
                         localStorage.setItem('usuarios_sgg', JSON.stringify(usuarios));
 
