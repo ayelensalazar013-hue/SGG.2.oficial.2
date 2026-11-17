@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Limitar fecha máxima al día actual en el input date (CU-05 y CU-07)
+    // Bloquea días y años futuros en el calendario (CU-05 y CU-07)
     const inputFecha = document.getElementById("fecha");
     if (inputFecha) {
         inputFecha.max = obtenerFechaHoyLocal();
@@ -148,14 +148,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return;
             }
 
-            // Validación CU-05 y CU-07: campos obligatorios y fecha no futura
+            // Validación CU-05 y CU-07: campos obligatorios
             if (!fecha || !categoria) {
                 mostrarMensajeFormulario("Error: Debe completar la fecha y la categoría.", "error");
                 return;
             }
 
-            if (fecha > obtenerFechaHoyLocal()) {
-                mostrarMensajeFormulario("Error: La fecha no puede ser mayor a la fecha actual.", "error");
+            // Validación estricta CU-05 y CU-07: no permite fechas posteriores al día actual
+            const fechaHoy = obtenerFechaHoyLocal();
+            if (fecha > fechaHoy) {
+                mostrarMensajeFormulario("Error: No se permiten fechas futuras. Solo puede cargar gastos de hoy o anteriores.", "error");
                 return;
             }
 
@@ -191,6 +193,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     urlComprobante
                 );
                 formGasto.reset();
+                if (inputFecha) inputFecha.max = obtenerFechaHoyLocal();
                 mostrarMensajeFormulario("Movimiento registrado correctamente.", "success");
             }
 
@@ -249,7 +252,9 @@ window.prepararEdicion = function(id) {
     idMovimientoEditando = mov.id;
     document.getElementById("tipoMovimiento").value = mov.tipo_movimiento;
     document.getElementById("monto").value = mov.monto;
-    document.getElementById("fecha").value = mov.fecha;
+    const inputFecha = document.getElementById("fecha");
+    inputFecha.max = obtenerFechaHoyLocal();
+    inputFecha.value = mov.fecha;
     document.getElementById("categoria").value = mov.categoria;
     document.getElementById("descripcion").value = mov.descripcion || "";
 
@@ -269,6 +274,9 @@ function salirModoEdicion() {
     idMovimientoEditando = null;
     const formGasto = document.getElementById("formGasto");
     if (formGasto) formGasto.reset();
+
+    const inputFecha = document.getElementById("fecha");
+    if (inputFecha) inputFecha.max = obtenerFechaHoyLocal();
 
     const tituloForm = document.getElementById("tituloFormularioGasto");
     const btnGuardar = document.getElementById("btn-guardar-gasto");
