@@ -11,7 +11,7 @@
             padding-top: 75px !important;
         }
         main.dashboard-main {
-            max-width: 650px !important;
+            max-width: 560px !important;
             width: 100%;
             padding: 30px 25px !important;
         }
@@ -38,23 +38,55 @@
         .form-group {
             margin-bottom: 14px;
         }
-        .graficos-grid {
+        .grafico-centrado {
             display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            width: 100%;
         }
-        .grafico-item {
-            flex: 1 1 250px;
-            max-width: 270px;
+        .grafico-centrado h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
             text-align: center;
+        }
+        .grafico-caja {
+            width: 100%;
+            max-width: 270px;
+            margin: 0 auto;
+        }
+        /* Estilo violeta para el botón de subir comprobante */
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        input[type="file"]::file-selector-button {
+            background-color: var(--btn-color);
+            color: #ffffff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-right: 12px;
+            transition: background-color 0.2s ease;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: var(--btn-hover);
         }
     </style>
 </head>
 <body>
 
-    <button type="button" class="btn-tema" id="btnCambiarTema">Modo Día / Noche</button>
+    <button type="button" class="btn-tema" id="btnCambiarTema" onclick="cambiarTema()">Modo Día / Noche</button>
 
     <!-- Contenido Principal -->
     <main class="dashboard-main">
@@ -68,11 +100,11 @@
             </nav>
         </header>
 
-        <!-- Panel Superior: Resumen de Balance -->
+        <!-- Panel Superior: Resumen de Balance (CU-09) -->
         <section id="resumen-balance" class="dashboard-summary">
             <h2>Resumen General</h2>
             <div>
-                <p class="total-monto">Total Gastado: <span id="totalGastado">$0</span></p>
+                <p class="total-monto">Total Gastado: <span id="totalGastado">$0.00</span></p>
                 <p id="estadoSincronizacion" style="font-size: 0.9em; margin-top: 8px;">Estado: Modo Local (Offline-First)</p>
             </div>
         </section>
@@ -80,24 +112,20 @@
         <!-- Módulo de Reportes e Inteligencia de Datos (Chart.js) -->
         <section id="reportes-graficos">
             <h2>Panel de Control e Inteligencia de Datos</h2>
-            <div class="graficos-grid">
-                <div class="grafico-item">
-                    <h3>Egresos por Categoría</h3>
+            <div class="grafico-centrado">
+                <h3>Egresos por Categoría</h3>
+                <div class="grafico-caja">
                     <canvas id="chartCategorias"></canvas>
-                </div>
-                <div class="grafico-item">
-                    <h3>Ingresos vs. Egresos</h3>
-                    <canvas id="chartBalance"></canvas>
                 </div>
             </div>
         </section>
 
         <hr class="divisoria">
 
-        <!-- Formulario para Registrar Gastos o Ingresos -->
+        <!-- Formulario para Registrar o Editar Gastos / Ingresos (CU-05 y CU-07) -->
         <section id="formulario-gasto">
-            <h2>Cargar Movimiento</h2>
-            <form id="formGasto">
+            <h2 id="tituloFormularioGasto">Cargar Movimiento</h2>
+            <form id="formGasto" novalidate>
                 <div class="form-group">
                     <label for="tipoMovimiento">Tipo de Movimiento:</label>
                     <select id="tipoMovimiento" required>
@@ -140,12 +168,14 @@
                 </div>
 
                 <button type="submit" class="btn-principal" id="btn-guardar-gasto">Guardar Movimiento</button>
+                <button type="button" class="btn-cancelar" id="btnCancelarEdicion" style="display: none;">Cancelar Edición</button>
             </form>
+            <div id="mensajeMovimiento" class="msg-box" aria-live="polite"></div>
         </section>
 
         <hr class="divisoria">
 
-        <!-- Tabla con el Historial de Movimientos -->
+        <!-- Tabla con el Historial de Movimientos (CU-06, CU-07, CU-08) -->
         <section id="historial-gastos">
             <h2>Historial de Movimientos</h2>
             <div class="tabla-container">
@@ -170,20 +200,44 @@
 
     </main>
 
+    <!-- Ventana Modal de Confirmación para Eliminar Movimiento (CU-08) -->
+    <div id="modalEliminar" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Confirmar Eliminación</h3>
+            <p>¿Estás seguro de que deseas eliminar este movimiento?</p>
+            <div class="modal-acciones">
+                <button type="button" class="btn-eliminar btn-tabla" id="btnConfirmarEliminar">Confirmar</button>
+                <button type="button" class="btn-cancelar" id="btnCancelarEliminar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Persistencia y cambio de modo Claro/Oscuro (CU-02)
+        (function() {
+            const temaGuardado = localStorage.getItem('tema_sgg');
+            if (!temaGuardado) {
+                localStorage.setItem('tema_sgg', 'claro');
+                document.body.classList.remove('modo-noche');
+            } else if (temaGuardado === 'oscuro') {
+                document.body.classList.add('modo-noche');
+            } else {
+                document.body.classList.remove('modo-noche');
+            }
+        })();
+
+        window.cambiarTema = function() {
+            document.body.classList.toggle('modo-noche');
+            const esOscuro = document.body.classList.contains('modo-noche');
+            localStorage.setItem('tema_sgg', esOscuro ? 'oscuro' : 'claro');
+        };
+    </script>
+
     <!-- LIBRERÍAS Y SCRIPTS EN ORDEN ESTRICTO DE ARQUITECTURA -->
-    <!-- 1. Motor oficial de SQLite impulsado por WebAssembly -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    
-    <!-- 2. Librería Chart.js para visualización de datos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- 3. SDK oficial de Supabase (BaaS) para Sincronización en la Nube -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- 4. Capa de Persistencia Relacional y OPFS -->
     <script src="js/db.js"></script>
-
-    <!-- 5. Capa de Lógica de Interfaz de Usuario, API REST, Gráficos y BaaS -->
     <script src="js/dashboard.js"></script>
 
 </body>
