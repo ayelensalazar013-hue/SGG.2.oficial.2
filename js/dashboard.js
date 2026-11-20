@@ -1,4 +1,4 @@
-const IMGBB_API_KEY = "3b08e5c3c0df93608226065476a6d6d8";
+const IMGBB_API_KEY = "21c9a18cbea0944c8a5d7c94ec5d2553";
 
 let chartCategoriasInstance = null;
 let chartBalanceInstance = null;
