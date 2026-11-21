@@ -130,6 +130,30 @@ async function guardarMovimientoSQL(correo, tipo, monto, fecha, categoria, descr
     subirBaseDeDatosABaaS(correo);
 }
 
+// Operación UPDATE (Edición CU-07) vía SQL y respaldo en BaaS
+async function actualizarMovimientoSQL(idMovimiento, correo, tipo, monto, fecha, categoria, descripcion, urlComprobante = null) {
+    if (!db) await inicializarBaseDeDatos(correo);
+
+    if (urlComprobante) {
+        const sql = `
+            UPDATE movimientos
+            SET tipo_movimiento = ?, monto = ?, fecha = ?, categoria = ?, descripcion = ?, url_comprobante = ?
+            WHERE id = ? AND correo_usuario = ?
+        `;
+        db.run(sql, [tipo, monto, fecha, categoria, descripcion, urlComprobante, idMovimiento, correo]);
+    } else {
+        const sql = `
+            UPDATE movimientos
+            SET tipo_movimiento = ?, monto = ?, fecha = ?, categoria = ?, descripcion = ?
+            WHERE id = ? AND correo_usuario = ?
+        `;
+        db.run(sql, [tipo, monto, fecha, categoria, descripcion, idMovimiento, correo]);
+    }
+
+    await guardarEnOPFS();
+    subirBaseDeDatosABaaS(correo);
+}
+
 // Operación SELECT vía SQL (Solo activos)
 function obtenerMovimientosSQL(correo) {
     if (!db) return [];
@@ -200,6 +224,3 @@ function obtenerEgresosPorCategoriaSQL(correo) {
 
     return { categorias, montos };
 }
-
-
-
