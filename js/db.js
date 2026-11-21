@@ -200,3 +200,6 @@ function obtenerEgresosPorCategoriaSQL(correo) {
 
     return { categorias, montos };
 }
+
+
+
