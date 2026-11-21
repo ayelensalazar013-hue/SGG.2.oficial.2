@@ -2,15 +2,15 @@ let db = null;
 const NOMBRE_DB = "gastos.sqlite";
 
 // Configuración de Supabase (BaaS)
-const SUPABASE_URL = "https://tu-proyecto.supabase.co"; // Reemplazar con tu URL de Supabase
-const SUPABASE_ANON_KEY = "tu-anon-key-de-supabase";    // Reemplazar con tu anon key
+const SUPABASE_URL = "https://gunskgcqbcjllxefokgq.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ZwsRO0r82kEn0anD0FrsqA_JYmOsb8p";
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 /**
- * Inicialización con Flujo Offline-First:
- * 1. Intenta descargar el binario .sqlite desde el BaaS (Supabase Storage).
- * 2. Si lo encuentra, actualiza el archivo en OPFS local.
- * 3. Si no hay conexión o falla, carga la base de datos binaria local existente en OPFS.
+- Inicialización con Flujo Offline-First:
+- 1. Intenta descargar el binario .sqlite desde el BaaS (Supabase Storage).
+- 2. Si lo encuentra, actualiza el archivo en OPFS local.
+- 3. Si no hay conexión o falla, carga la base de datos binaria local existente en OPFS.
  */
 async function inicializarBaseDeDatos(correoUsuario = "usuario@ejemplo.com") {
     const SQL = await initSqlJs({
@@ -35,7 +35,7 @@ async function inicializarBaseDeDatos(correoUsuario = "usuario@ejemplo.com") {
 }
 
 /**
- * Descarga el binario .sqlite del BaaS y lo guarda localmente en OPFS
+- Descarga el binario .sqlite del BaaS y lo guarda localmente en OPFS
  */
 async function descargarBaseDeDatosDesdeBaaS(correoUsuario, root) {
     if (!supabaseClient) return;
@@ -63,7 +63,7 @@ async function descargarBaseDeDatosDesdeBaaS(correoUsuario, root) {
 }
 
 /**
- * Respalda el archivo binario .sqlite extraído de OPFS hacia el BaaS (Supabase Storage)
+- Respalda el archivo binario .sqlite extraído de OPFS hacia el BaaS (Supabase Storage)
  */
 async function subirBaseDeDatosABaaS(correoUsuario = "usuario@ejemplo.com") {
     if (!db || !supabaseClient) return false;
